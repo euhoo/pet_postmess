@@ -1,43 +1,8 @@
-/*Gримеры*/
-const messageExample = {
-    message: 'enableCoordinateSelection',
-    payload: {
-        id: '123123', // id для установки соответствия
-        data: 'someData', //данные
-        sender: 'GIS'
-    }
-};
-
-const gisOptionsExample = {
-    /*
-     senderTarget используется для отправки сообщений.
-     gервый случай для ГИСа открытого в дочернем окне, второй - если в том же
-    */
-    targetToSend: window.opener || window.top,
-    /*
-    используется для получения сообщений
-    */
-    targetToReceive: window,
-};
-
-const reactFromGwtOptionsExample = {
-    // targetToSend: window.top.bggisMapWindow,
-    // targetToReceive: window.top,
-
-};
-
-const listenersExample = {
-    // enableCoordinateSelection: [
-    // 	{id: 'someElementId', func: (data) => {console.log(data)} }
-    // ]
-};
-/*Конец примеров*/
-
 
 type Payload_T<T = any> = {
     id: string
     data: T
-	sender: string
+    sender: string
 }
 type Method_T<T> = {
     id: string,
@@ -51,6 +16,7 @@ type AppOptions_T = {
     targetToReceive: Window,
     target: string,//window.location.origin для одного домена
 }
+
 const listeners: Listeners_T = {};
 const appOptions: AppOptions_T = {
     targetToSend: window.opener || window.top,
@@ -83,16 +49,24 @@ const makeInitListener = <T = any>(targetToReceive: Window) => {
     )
 };
 
-const init = (options: AppOptions_T) => {
-	const {targetToSend, targetToReceive, target} = options;
+export const init = (options: AppOptions_T) => {
+    const {targetToSend, targetToReceive, target} = options;
     appOptions.targetToSend = targetToSend;
     appOptions.targetToReceive = targetToReceive;
     appOptions.target = target;
     makeInitListener(appOptions.targetToReceive);
 };
 
+interface Postmess_I {
+    id: string
+    options: AppOptions_T
+    sender: string
+    subscribe: <T = any>(methodName: string, func: (data: T) => {}) => void
+    unsubscribe: (methodName: string) => void
+    sendMessage: <T = any>(method: string, data: T) => void
+}
 
-class postmessClass<Postmess_I> {
+class postmessClass {
     private id: string;
     private options: AppOptions_T;
     private sender: string;
@@ -105,7 +79,7 @@ class postmessClass<Postmess_I> {
         this.sender = sender;
     }
 
-    subscribe = <T = any>(methodName: string, func: (data:T) => {}) => {
+    subscribe = <T = any>(methodName: string, func: (data: T) => {}) => {
         //нахожу метод в listeners
         const methods = listeners[methodName] || [];
         // убираю из него подписчика с таким же id, если есть
@@ -126,7 +100,7 @@ class postmessClass<Postmess_I> {
         listeners[methodName] = newMethods;
     };
 
-    sendMessage = <T = any>(method:string, data: T) => {
+    sendMessage = <T = any>(method: string, data: T) => {
         const {target, targetToSend} = this.options;
         const message = {
             message: method,
@@ -138,12 +112,6 @@ class postmessClass<Postmess_I> {
         };
         targetToSend.postMessage(message, target)
     }
-
-
 }
 
-const postmess = (id: string, senderName: string) => new postmessClass(id, senderName, appOptions);
-export default {
-    init,
-    postmess,
-}
+export const postmess = (id: string, senderName: string) => new postmessClass(id, senderName, appOptions);
