@@ -1,6 +1,6 @@
 {
   "name": "postmess",
-  "version": "0.0.4",
+  "version": "0.0.6",
   "description": "",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -8,10 +8,9 @@
     "lib/"
   ],
   "scripts": {
-    "build": "tsc",
-    "webpack": "webpack",
+    "tsc": "tsc",
+    "build": "webpack",
     "prepublishOnly": "npm run build",
-    "prepare": "npm run build",
     "link": "npm link",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
     "lint": "tslint -p tsconfig.json"
